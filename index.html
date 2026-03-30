@@ -3,81 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vocab Voice Game</title>
+    <title>Vocab Voice Game - M.1</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 30px; background-color: #f4f7f6; }
+        select { font-size: 18px; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 2px solid #0984e3; }
         #game-area { position: relative; width: 600px; height: 300px; background: white; border: 3px dashed #ccc; border-radius: 15px; margin: 0 auto; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .box { position: absolute; top: 100px; width: 140px; height: 100px; line-height: 100px; font-size: 24px; font-weight: bold; border-radius: 10px; transition: all 1s ease; }
+        .box { position: absolute; top: 100px; padding: 0 20px; height: 100px; line-height: 100px; font-size: 28px; font-weight: bold; border-radius: 10px; transition: all 0.8s ease; white-space: nowrap; }
         #hint-box { left: 20px; background-color: #ffeaa7; color: #d63031; }
         #word-box { right: 20px; background-color: #81ecec; color: #0984e3; }
         button { margin-top: 30px; padding: 15px 30px; font-size: 18px; cursor: pointer; background-color: #00b894; color: white; border: none; border-radius: 50px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         button:hover { background-color: #00cec9; }
         #status { margin-top: 20px; font-size: 20px; font-weight: bold; color: #2d3436; }
+        #score-board { font-size: 24px; margin-bottom: 15px; color: #e17055; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>🎤 เกมฝึกออกเสียงคำศัพท์</h2>
+    <h2>🎤 เกมฝึกออกเสียงคำศัพท์ ม.1</h2>
     
+    <select id="module-select" onchange="loadNewWord()">
+        <option value="m4">Module 4: Family & Routines</option>
+        <option value="m5">Module 5: Animals & Pets</option>
+        <option value="m6">Module 6: Weather & Clothes</option>
+        <option value="m7">Module 7: Jobs & Verbs</option>
+        <option value="m8">Module 8: Food & Celebrations</option>
+        <option value="m9">Module 9: Shops & Places</option>
+        <option value="m10">Module 10: Holiday activities</option>
+    </select>
+
+    <div id="score-board">คะแนน: <span id="score">0</span></div>
+
     <div id="game-area">
-        <div id="hint-box" class="box">🍎 ผลไม้</div>
-        <div id="word-box" class="box">Apple</div>
+        <div id="hint-box" class="box">เตรียมพร้อม</div>
+        <div id="word-box" class="box">Ready</div>
     </div>
 
-    <button onclick="startListening()">กดปุ่มนี้แล้วพูดคำศัพท์ 🎤</button>
-    <p id="status">รอกดปุ่มเพื่อเริ่มฟังเสียง...</p>
+    <button onclick="startListening()">กดปุ่มแล้วเริ่มพูด 🎤</button>
+    <p id="status">กำลังโหลดคำศัพท์...</p>
 
     <script>
+        // ฐานข้อมูลคำศัพท์ (ผมใส่ตัวอย่างไว้บทละ 5-6 คำ คุณครูสามารถมาพิมพ์เพิ่มตรงนี้ได้เลยครับ)
+        const vocabData = {
+            m4: ["grandfather", "mother", "clever", "friendly", "have dinner", "get up"],
+            m5: ["penguin", "polar bear", "tortoise", "butterfly", "mosquito", "rabbit"],
+            m6: ["winter", "summer", "cloudy", "jacket", "trousers", "windsurf"],
+            m7: ["scientist", "astronaut", "explorer", "manage", "travel", "succeed"],
+            m8: ["biscuits", "pineapples", "potatoes", "cheese", "takeaway", "tomatoes"],
+            m9: ["chemist", "bookshop", "museum", "comedy", "adventure", "motorbike"],
+            m10: ["hiking", "sunbathing", "swimming", "fishing", "sailing", "souvenirs"]
+        };
+
+        let currentWord = "";
+        let score = 0;
+
         const hintBox = document.getElementById('hint-box');
         const wordBox = document.getElementById('word-box');
         const statusText = document.getElementById('status');
-        const targetWord = "apple"; // คำศัพท์ที่ต้องการให้เด็กพูด
+        const moduleSelect = document.getElementById('module-select');
+        const scoreDisplay = document.getElementById('score');
+
+        function loadNewWord() {
+            const selectedModule = moduleSelect.value;
+            const words = vocabData[selectedModule];
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            
+            hintBox.innerText = "พูดคำนี้ 👉";
+            wordBox.innerText = currentWord;
+            
+            // รีเซ็ตตำแหน่งกล่อง
+            hintBox.style.left = "20px";
+            wordBox.style.right = "20px";
+            
+            statusText.innerText = "กดไมค์แล้วพูดคำว่า: " + currentWord;
+            statusText.style.color = "#2d3436";
+        }
 
         function startListening() {
-            // เช็คว่าบราวเซอร์รองรับระบบรับเสียงไหม
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                statusText.innerText = "❌ บราวเซอร์นี้ไม่รองรับระบบเสียง แนะนำให้ใช้ Google Chrome ครับ";
-                statusText.style.color = "red";
+                statusText.innerText = "❌ บราวเซอร์ไม่รองรับ แนะนำให้ใช้ Google Chrome ครับ";
                 return;
             }
 
             const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US'; // ตั้งค่าให้ฟังเสียงภาษาอังกฤษ
+            recognition.lang = 'en-US';
 
             recognition.onstart = function() {
-                statusText.innerText = "🎧 กำลังฟัง... พูดคำว่า Apple เลย!";
+                statusText.innerText = "🎧 กำลังฟัง... พูดเลย!";
                 statusText.style.color = "#0984e3";
-                // รีเซ็ตตำแหน่งกล่อง
                 hintBox.style.left = "20px";
                 wordBox.style.right = "20px";
             };
 
             recognition.onresult = function(event) {
-                const spokenWord = event.results[0][0].transcript.toLowerCase().replace('.', '');
+                const spokenWord = event.results[0][0].transcript.toLowerCase().replace(/[^a-z\s]/g, '').trim();
+                const targetWord = currentWord.toLowerCase().trim();
                 
                 if (spokenWord === targetWord) {
-                    statusText.innerText = "🎉 ยอดเยี่ยม! คุณพูดว่า: " + spokenWord;
+                    statusText.innerText = "🎉 ยอดเยี่ยม! เปลี่ยนคำต่อไป...";
                     statusText.style.color = "#00b894";
-                    // สั่งให้กล่องเลื่อนมาชนกันตรงกลาง
-                    hintBox.style.left = "230px";
-                    wordBox.style.right = "230px";
+                    // ให้กล่องเลื่อนมาชนกัน
+                    hintBox.style.left = "180px"; 
+                    wordBox.style.right = "180px";
+                    
+                    score += 10;
+                    scoreDisplay.innerText = score;
+
+                    // หน่วงเวลา 2 วินาทีแล้วดึงคำศัพท์ใหม่มาให้เล่นต่อ
+                    setTimeout(loadNewWord, 2000);
                 } else {
-                    statusText.innerText = "❌ เกือบแล้ว! คุณพูดว่า: " + spokenWord + " (ลองใหม่อีกครั้งนะ)";
+                    statusText.innerText = "❌ ได้ยินว่า: " + spokenWord + " (ลองใหม่นะ)";
                     statusText.style.color = "#d63031";
-                    // สั่งให้กล่องเด้งกลับไปที่เดิม
-                    hintBox.style.left = "20px";
-                    wordBox.style.right = "20px";
                 }
             };
 
-            recognition.onerror = function(event) {
-                statusText.innerText = "⚠️ ไม่ได้ยินเสียงครับ ลองกดพูดใหม่อีกครั้ง";
-                statusText.style.color = "#d63031";
+            recognition.onerror = function() {
+                statusText.innerText = "⚠️ ไม่ได้ยินเสียงครับ ลองกดพูดอีกครั้ง";
             };
 
             recognition.start();
         }
+
+        // สั่งให้โหลดคำศัพท์แรกทันทีที่เปิดเว็บ
+        window.onload = loadNewWord;
     </script>
 </body>
 </html>
