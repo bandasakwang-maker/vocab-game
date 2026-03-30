@@ -125,7 +125,7 @@
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(currentModuleWords[wordIndex]);
                 utterance.lang = 'en-US';
-                utterance.rate = 0.85; // ปรับให้พูดช้าลงนิดนึงสำหรับประโยคยาวๆ
+                utterance.rate = 0.85; 
                 window.speechSynthesis.speak(utterance);
             } else {
                 alert("เบราว์เซอร์ไม่รองรับระบบอ่านออกเสียงครับ");
@@ -151,7 +151,6 @@
                 return;
             }
 
-            // ถ้าประโยคยาวมาก ให้ลดขนาดฟอนต์ลงอัตโนมัติจะได้ไม่ล้นขอบ
             if(currentModuleWords[wordIndex].length > 15) {
                 wordDisplay.style.fontSize = "40px";
             } else {
@@ -185,7 +184,6 @@
             };
 
             recognition.onresult = function(event) {
-                // ตัดเครื่องหมายวรรคตอนออกเวลาตรวจคำตอบ
                 const spokenWord = event.results[0][0].transcript.toLowerCase().replace(/[^a-z\s]/g, '').trim();
                 const targetWord = currentModuleWords[wordIndex].toLowerCase().replace(/[^a-z\s]/g, '').trim();
                 
@@ -208,8 +206,22 @@
                 }
             };
 
-            recognition.onerror = function() {
-                statusText.innerText = "⚠️ ไม่ได้ยินเสียงครับ ลองกดพูดอีกครั้ง";
+            recognition.onerror = function(event) {
+                if (event.error === 'no-speech') {
+                    statusText.innerText = "⚠️ ไม่ได้ยินเสียงครับ กดปุ่มพูดใหม่อีกครั้งนะ";
+                } else {
+                    statusText.innerText = "⚠️ มีข้อผิดพลาดของไมค์: " + event.error;
+                }
+                statusText.style.color = "#e17055";
+            };
+
+            // อัปเดตใหม่: ดักจับตอนที่ Chrome ปิดไมค์อัตโนมัติ
+            recognition.onend = function() {
+                // ถ้าข้อความยังค้างว่า "กำลังฟัง..." แสดงว่าระบบตัดไมค์ไปเองโดยไม่ได้ยินอะไร
+                if (statusText.innerText.includes("กำลังฟัง")) {
+                    statusText.innerText = "🔇 ไมค์ตัดไปแล้วครับ (กดปุ่มไมค์พูดใหม่ได้เลย)";
+                    statusText.style.color = "#e17055";
+                }
             };
 
             recognition.start();
