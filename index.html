@@ -7,15 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 30px; background-color: #f4f7f6; }
-        select { font-size: 18px; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 2px solid #0984e3; }
+        select { font-size: 18px; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 2px solid #0984e3; max-width: 90%; }
         
-        #game-area { width: 600px; height: 300px; background: white; border: 3px dashed #ccc; border-radius: 15px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        #game-area { width: 600px; max-width: 95%; height: 300px; background: white; border: 3px dashed #ccc; border-radius: 15px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
         #top-bar { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #636e72; }
-        #word-display { font-size: 65px; font-weight: bold; color: #0984e3; margin: 0; }
+        #word-display { font-size: 55px; font-weight: bold; color: #0984e3; margin: 0; padding: 0 20px; word-wrap: break-word; text-align: center; }
         
-        .btn-group { margin-top: 30px; }
-        button { padding: 12px 20px; font-size: 18px; cursor: pointer; color: white; border: none; border-radius: 50px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 0 8px; transition: 0.2s; }
+        .btn-group { margin-top: 30px; display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; }
+        button { padding: 12px 20px; font-size: 18px; cursor: pointer; color: white; border: none; border-radius: 50px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
         
         .btn-mic { background-color: #00b894; padding: 15px 30px; font-size: 20px; }
         .btn-mic:hover { background-color: #00cec9; transform: scale(1.05); }
@@ -33,6 +33,9 @@
     <h2>🎤 เกมฝึกออกเสียงคำศัพท์ ม.1</h2>
     
     <select id="module-select" onchange="startGame()">
+        <option value="m1">Module 1: School & Introducing</option>
+        <option value="m2">Module 2: Body, Appearance & Things</option>
+        <option value="m3">Module 3: Rooms & Furniture</option>
         <option value="m4">Module 4: Family & Routines</option>
         <option value="m5">Module 5: Animals & Pets</option>
         <option value="m6">Module 6: Weather & Clothes</option>
@@ -51,7 +54,7 @@
     </div>
 
     <div class="btn-group">
-        <button class="btn-restart" onclick="startGame()">🔄 เริ่มเกมใหม่</button>
+        <button class="btn-restart" onclick="startGame()">🔄 เริ่มใหม่</button>
         <button class="btn-speak" onclick="playExample()">🔊 ฟังตัวอย่าง</button>
         <button class="btn-mic" onclick="startListening()">🎤 กดแล้วพูด</button>
     </div>
@@ -60,6 +63,9 @@
 
     <script>
         const vocabData = {
+            m1: ["English", "Information Technology", "Music", "History", "Maths", "Physical Education", "Art", "Science", "Geography", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "sharpener", "notepad", "eraser", "pencil", "atlas", "ruler", "bag", "Nice to meet you", "How old are you", "What is your name", "How are you", "I am fine thanks", "Not bad", "See you later", "Hello", "Good morning", "Good afternoon", "Good evening", "Good night", "Goodbye"],
+            m2: ["eye", "head", "hair", "ear", "moustache", "arm", "leg", "nose", "mouth", "hand", "foot", "short", "tall", "big", "small", "plump", "thin", "long", "beautiful", "ugly", "cap", "guitar", "scarf", "watch", "handbag", "teddy bear", "jeans", "shoes", "bicycle", "gloves", "basketball", "digital camera", "helmet", "skateboard", "trainers", "the UK", "the USA", "Spain", "Russia", "New Zealand", "France", "Japan", "American", "Russian", "British", "New Zealander", "Spanish", "French", "Japanese", "How can I help you", "I want to buy a souvenir", "How about this scarf", "That is a good idea", "How much is it", "Here you are"],
+            m3: ["bedroom", "bathroom", "hall", "kitchen", "living room", "garden", "garage", "window", "wardrobe", "pillow", "bed", "lamp", "desk", "bookcase", "books", "carpet", "mirror", "washbasin", "toilet", "mat", "towel", "bath", "stairs", "floor", "sink", "cooker", "cupboard", "fridge", "chairs", "table", "paintings", "armchair", "curtain", "cushion", "sofa", "coffee table", "Here we are", "Let us go in", "The living room is very big", "Let us go upstairs", "Which is my bedroom", "It is your favourite colour"],
             m4: ["grandfather", "mother", "clever", "friendly", "have dinner", "get up"],
             m5: ["penguin", "polar bear", "tortoise", "butterfly", "mosquito", "rabbit"],
             m6: ["winter", "summer", "cloudy", "jacket", "trousers", "windsurf"],
@@ -80,7 +86,6 @@
         const scoreDisplay = document.getElementById('score');
         const progressDisplay = document.getElementById('progress');
 
-        // ฟังก์ชันสับเปลี่ยนลำดับคำศัพท์ (Shuffle) แบบสุ่ม
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -120,17 +125,15 @@
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(currentModuleWords[wordIndex]);
                 utterance.lang = 'en-US';
-                utterance.rate = 0.9;
+                utterance.rate = 0.85; // ปรับให้พูดช้าลงนิดนึงสำหรับประโยคยาวๆ
                 window.speechSynthesis.speak(utterance);
             } else {
                 alert("เบราว์เซอร์ไม่รองรับระบบอ่านออกเสียงครับ");
             }
         }
 
-        // เริ่มเกมใหม่ ดึงคำศัพท์มาสับไพ่ รีเซ็ตคะแนน
         function startGame() {
             const selectedModule = moduleSelect.value;
-            // ก๊อปปี้คำศัพท์มาแล้วสับลำดับใหม่
             currentModuleWords = shuffleArray([...vocabData[selectedModule]]);
             wordIndex = 0;
             score = 0;
@@ -141,10 +144,18 @@
         function showWord() {
             if (wordIndex >= currentModuleWords.length) {
                 wordDisplay.innerText = "🎉 จบเกม!";
+                wordDisplay.style.fontSize = "55px";
                 statusText.innerText = "เก่งมาก! ทำครบทุกคำในบทนี้แล้ว";
                 statusText.style.color = "#00b894";
                 progressDisplay.innerText = currentModuleWords.length + "/" + currentModuleWords.length;
                 return;
+            }
+
+            // ถ้าประโยคยาวมาก ให้ลดขนาดฟอนต์ลงอัตโนมัติจะได้ไม่ล้นขอบ
+            if(currentModuleWords[wordIndex].length > 15) {
+                wordDisplay.style.fontSize = "40px";
+            } else {
+                wordDisplay.style.fontSize = "55px";
             }
 
             wordDisplay.innerText = currentModuleWords[wordIndex];
@@ -154,7 +165,7 @@
         }
 
         function startListening() {
-            if (wordIndex >= currentModuleWords.length) return; // ถ้าจบเกมแล้วกดไมค์ไม่ได้
+            if (wordIndex >= currentModuleWords.length) return;
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -174,12 +185,12 @@
             };
 
             recognition.onresult = function(event) {
+                // ตัดเครื่องหมายวรรคตอนออกเวลาตรวจคำตอบ
                 const spokenWord = event.results[0][0].transcript.toLowerCase().replace(/[^a-z\s]/g, '').trim();
-                const targetWord = currentModuleWords[wordIndex].toLowerCase().trim();
+                const targetWord = currentModuleWords[wordIndex].toLowerCase().replace(/[^a-z\s]/g, '').trim();
                 
                 if (spokenWord === targetWord) {
                     playSound('success');
-                    // ยิงพลุกระดาษฉลอง
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                     
                     statusText.innerText = "🎉 ยอดเยี่ยม! เปลี่ยนคำต่อไป...";
@@ -187,7 +198,7 @@
                     
                     score += 10;
                     scoreDisplay.innerText = score;
-                    wordIndex++; // เลื่อนไปคำถัดไป
+                    wordIndex++;
 
                     setTimeout(showWord, 2000);
                 } else {
@@ -204,7 +215,6 @@
             recognition.start();
         }
 
-        // โหลดเกมครั้งแรกเมื่อเปิดเว็บ
         window.onload = startGame;
     </script>
 </body>
