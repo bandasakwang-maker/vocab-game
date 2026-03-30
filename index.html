@@ -21,6 +21,8 @@
         .btn-mic:hover { background-color: #00cec9; transform: scale(1.05); }
         .btn-speak { background-color: #0984e3; }
         .btn-speak:hover { background-color: #74b9ff; }
+        .btn-skip { background-color: #f39c12; }
+        .btn-skip:hover { background-color: #f1c40f; }
         .btn-restart { background-color: #e17055; }
         .btn-restart:hover { background-color: #fab1a0; }
         
@@ -57,6 +59,7 @@
         <button class="btn-restart" onclick="startGame()">🔄 เริ่มใหม่</button>
         <button class="btn-speak" onclick="playExample()">🔊 ฟังตัวอย่าง</button>
         <button class="btn-mic" onclick="startListening()">🎤 กดแล้วพูด</button>
+        <button class="btn-skip" onclick="skipWord()">⏭️ ข้ามคำนี้</button>
     </div>
     
     <p id="status">เลือกระดับชั้นแล้วกดปุ่มเพื่อเริ่มเลย!</p>
@@ -185,6 +188,13 @@
             progressDisplay.innerText = (wordIndex + 1) + "/" + currentModuleWords.length;
             statusText.innerText = "กดไมค์แล้วพูดคำว่า: " + currentModuleWords[wordIndex];
             statusText.style.color = "#2d3436";
+        }
+
+        // ฟังก์ชันสำหรับปุ่มข้ามคำ
+        function skipWord() {
+            if (wordIndex >= currentModuleWords.length) return;
+            wordIndex++;
+            showWord();
         }
 
         function cleanWord(word) {
