@@ -21,7 +21,7 @@
 
     <h2>🎤 เกมฝึกออกเสียงคำศัพท์ ม.1</h2>
     
-    <select id="module-select" onchange="loadNewWord()">
+    <select id="module-select" onchange="changeModule()">
         <option value="m4">Module 4: Family & Routines</option>
         <option value="m5">Module 5: Animals & Pets</option>
         <option value="m6">Module 6: Weather & Clothes</option>
@@ -39,10 +39,9 @@
     </div>
 
     <button onclick="startListening()">กดปุ่มแล้วเริ่มพูด 🎤</button>
-    <p id="status">กำลังโหลดคำศัพท์...</p>
+    <p id="status">เลือกระดับชั้นแล้วกดปุ่มเพื่อเริ่มเลย!</p>
 
     <script>
-        // ฐานข้อมูลคำศัพท์ (ผมใส่ตัวอย่างไว้บทละ 5-6 คำ คุณครูสามารถมาพิมพ์เพิ่มตรงนี้ได้เลยครับ)
         const vocabData = {
             m4: ["grandfather", "mother", "clever", "friendly", "have dinner", "get up"],
             m5: ["penguin", "polar bear", "tortoise", "butterfly", "mosquito", "rabbit"],
@@ -53,8 +52,10 @@
             m10: ["hiking", "sunbathing", "swimming", "fishing", "sailing", "souvenirs"]
         };
 
+        let availableWords = [];
         let currentWord = "";
         let score = 0;
+        let audioCtx;
 
         const hintBox = document.getElementById('hint-box');
         const wordBox = document.getElementById('word-box');
@@ -62,19 +63,62 @@
         const moduleSelect = document.getElementById('module-select');
         const scoreDisplay = document.getElementById('score');
 
-        function loadNewWord() {
+        function playSound(type) {
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'success') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } else {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
+        // ฟังก์ชันโหลดคำศัพท์เมื่อเปลี่ยนหมวด
+        function changeModule() {
             const selectedModule = moduleSelect.value;
-            const words = vocabData[selectedModule];
-            currentWord = words[Math.floor(Math.random() * words.length)];
+            // ดึงคำศัพท์ทั้งหมดในหมวดนั้นมาใส่กล่องจับฉลาก
+            availableWords = [...vocabData[selectedModule]]; 
+            loadNewWord();
+        }
+
+        function loadNewWord() {
+            // ถ้ารอบนี้คำศัพท์หมดแล้ว ให้เติมคำศัพท์กลับเข้าไปใหม่
+            if (availableWords.length === 0) {
+                const selectedModule = moduleSelect.value;
+                availableWords = [...vocabData[selectedModule]];
+                statusText.innerText = "🎉 เก่งมาก! จบหมวดแล้ว เริ่มวนคำศัพท์รอบใหม่";
+            }
+
+            // สุ่มหยิบ 1 คำจากคำที่ยังเหลืออยู่
+            const randomIndex = Math.floor(Math.random() * availableWords.length);
+            currentWord = availableWords[randomIndex];
             
             hintBox.innerText = "พูดคำนี้ 👉";
             wordBox.innerText = currentWord;
             
-            // รีเซ็ตตำแหน่งกล่อง
             hintBox.style.left = "20px";
             wordBox.style.right = "20px";
             
-            statusText.innerText = "กดไมค์แล้วพูดคำว่า: " + currentWord;
+            if (statusText.innerText.indexOf("จบหมวด") === -1) {
+                statusText.innerText = "กดไมค์แล้วพูดคำว่า: " + currentWord;
+            }
             statusText.style.color = "#2d3436";
         }
 
@@ -84,6 +128,9 @@
                 statusText.innerText = "❌ บราวเซอร์ไม่รองรับ แนะนำให้ใช้ Google Chrome ครับ";
                 return;
             }
+
+            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
 
             const recognition = new SpeechRecognition();
             recognition.lang = 'en-US';
@@ -100,20 +147,24 @@
                 const targetWord = currentWord.toLowerCase().trim();
                 
                 if (spokenWord === targetWord) {
+                    playSound('success');
                     statusText.innerText = "🎉 ยอดเยี่ยม! เปลี่ยนคำต่อไป...";
                     statusText.style.color = "#00b894";
-                    // ให้กล่องเลื่อนมาชนกัน
                     hintBox.style.left = "180px"; 
                     wordBox.style.right = "180px";
                     
                     score += 10;
                     scoreDisplay.innerText = score;
 
-                    // หน่วงเวลา 2 วินาทีแล้วดึงคำศัพท์ใหม่มาให้เล่นต่อ
+                    // ตัดคำที่พูดถูกออกไปจากกองฉลาก
+                    availableWords = availableWords.filter(word => word !== currentWord);
+
                     setTimeout(loadNewWord, 2000);
                 } else {
+                    playSound('error');
                     statusText.innerText = "❌ ได้ยินว่า: " + spokenWord + " (ลองใหม่นะ)";
                     statusText.style.color = "#d63031";
+                    // ถ้าผิด คำจะยังอยู่ในกองเหมือนเดิม ให้ลองกดพูดแก้ตัวใหม่ได้เลย
                 }
             };
 
@@ -124,8 +175,7 @@
             recognition.start();
         }
 
-        // สั่งให้โหลดคำศัพท์แรกทันทีที่เปิดเว็บ
-        window.onload = loadNewWord;
+        window.onload = changeModule;
     </script>
 </body>
 </html>
