@@ -67,7 +67,7 @@
             m2: ["eye", "head", "hair", "ear", "moustache", "arm", "leg", "nose", "mouth", "hand", "foot", "short", "tall", "big", "small", "plump", "thin", "long", "beautiful", "ugly", "cap", "guitar", "scarf", "watch", "handbag", "teddy bear", "jeans", "shoes", "bicycle", "gloves", "basketball", "digital camera", "helmet", "skateboard", "trainers", "the UK", "the USA", "Spain", "Russia", "New Zealand", "France", "Japan", "American", "Russian", "British", "New Zealander", "Spanish", "French", "Japanese", "How can I help you", "I want to buy a souvenir", "How about this scarf", "That is a good idea", "How much is it", "Here you are"],
             m3: ["bedroom", "bathroom", "hall", "kitchen", "living room", "garden", "garage", "window", "wardrobe", "pillow", "bed", "lamp", "desk", "bookcase", "books", "carpet", "mirror", "washbasin", "toilet", "mat", "towel", "bath", "stairs", "floor", "sink", "cooker", "cupboard", "fridge", "chairs", "table", "paintings", "armchair", "curtain", "cushion", "sofa", "coffee table", "Here we are", "Let us go in", "The living room is very big", "Let us go upstairs", "Which is my bedroom", "It is your favourite colour"],
             m4: ["grandfather", "mother", "clever", "friendly", "have dinner", "get up"],
-            m5: ["penguin", "polar bear", "tortoise", "butterfly", "mosquito", "rabbit"],
+            m5: ["fur", "ear", "beak", "wings", "feathers", "tail", "legs", "reindeer", "penguin", "snowy owl", "seal", "polar bear", "wolf", "dog", "tortoise", "goldfish", "hamster", "cat", "budgie", "rabbit", "What's the matter", "What's wrong with him", "How do you know", "Let's have a look at him", "dragonfly", "bee", "ladybirds", "butterfly", "fly", "ant", "beetle", "mosquito", "grasshopper", "wasps"],
             m6: ["winter", "summer", "cloudy", "jacket", "trousers", "windsurf"],
             m7: ["scientist", "astronaut", "explorer", "manage", "travel", "succeed"],
             m8: ["biscuits", "pineapples", "potatoes", "cheese", "takeaway", "tomatoes"],
@@ -79,6 +79,7 @@
         let wordIndex = 0;
         let score = 0;
         let audioCtx;
+        let isGameEnded = false; // ตัวแปรเช็คสถานะจบเกม
 
         const wordDisplay = document.getElementById('word-display');
         const statusText = document.getElementById('status');
@@ -111,13 +112,32 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
                 oscillator.start(audioCtx.currentTime);
                 oscillator.stop(audioCtx.currentTime + 0.5);
-            } else {
+            } else if (type === 'error') {
                 oscillator.type = 'sawtooth';
                 oscillator.frequency.setValueAtTime(150, audioCtx.currentTime); 
                 gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
                 oscillator.start(audioCtx.currentTime);
                 oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'finish') {
+                // เสียงแต่นแตนแต๊น (C5 -> G5)
+                oscillator.type = 'triangle';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2);
+
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); 
+                gain2.gain.setValueAtTime(1, audioCtx.currentTime + 0.2);
+                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+                osc2.start(audioCtx.currentTime + 0.2);
+                osc2.stop(audioCtx.currentTime + 1.2);
             }
         }
 
@@ -137,12 +157,17 @@
             currentModuleWords = shuffleArray([...vocabData[selectedModule]]);
             wordIndex = 0;
             score = 0;
+            isGameEnded = false;
             scoreDisplay.innerText = score;
             showWord();
         }
 
         function showWord() {
             if (wordIndex >= currentModuleWords.length) {
+                if (!isGameEnded) {
+                    playSound('finish');
+                    isGameEnded = true;
+                }
                 wordDisplay.innerText = "🎉 จบเกม!";
                 wordDisplay.style.fontSize = "55px";
                 statusText.innerText = "เก่งมาก! ทำครบทุกคำในบทนี้แล้ว";
@@ -215,9 +240,7 @@
                 statusText.style.color = "#e17055";
             };
 
-            // อัปเดตใหม่: ดักจับตอนที่ Chrome ปิดไมค์อัตโนมัติ
             recognition.onend = function() {
-                // ถ้าข้อความยังค้างว่า "กำลังฟัง..." แสดงว่าระบบตัดไมค์ไปเองโดยไม่ได้ยินอะไร
                 if (statusText.innerText.includes("กำลังฟัง")) {
                     statusText.innerText = "🔇 ไมค์ตัดไปแล้วครับ (กดปุ่มไมค์พูดใหม่ได้เลย)";
                     statusText.style.color = "#e17055";
