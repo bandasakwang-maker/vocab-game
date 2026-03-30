@@ -68,7 +68,7 @@
             m3: ["bedroom", "bathroom", "hall", "kitchen", "living room", "garden", "garage", "window", "wardrobe", "pillow", "bed", "lamp", "desk", "bookcase", "books", "carpet", "mirror", "washbasin", "toilet", "mat", "towel", "bath", "stairs", "floor", "sink", "cooker", "cupboard", "fridge", "chairs", "table", "paintings", "armchair", "curtain", "cushion", "sofa", "coffee table", "Here we are.", "Let's go in.", "The living room is very big.", "Let's go upstairs.", "Which is my bedroom?", "It's your favourite colour."],
             m4: ["grandfather", "grandmother", "father", "mother", "brother", "sister", "cool", "kind", "sweet", "clever", "friendly", "noisy", "funny", "naughty", "caring", "have dinner", "watch a DVD", "have lunch", "get up", "have a cup of tea", "work on the computer", "have breakfast", "go to bed", "do the shopping", "do homework", "go jogging", "go to school", "Look at that girl over there.", "Who is she?", "What's her name?", "How old is she?", "What's she like?"],
             m5: ["fur", "ear", "beak", "wings", "feathers", "tail", "legs", "reindeer", "penguin", "snowy owl", "seal", "polar bear", "wolf", "dog", "tortoise", "goldfish", "hamster", "cat", "budgie", "rabbit", "What's the matter?", "What's wrong with him?", "How do you know?", "Let's have a look at him.", "dragonfly", "bee", "ladybirds", "butterfly", "fly", "ant", "beetle", "mosquito", "grasshopper", "wasps"],
-            m6: ["winter", "summer", "cloudy", "jacket", "trousers", "windsurf"],
+            m6: ["Seasons", "Months", "Winter", "Spring", "Autumn", "Summer", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", "Weather", "wet", "rainy", "cloudy", "windy", "cold", "snowy", "hot", "sunny", "chilly", "foggy", "warm", "Clothes", "T-shirt", "shorts", "blouse", "jacket", "skirt", "socks", "shoes", "trainers", "gloves", "shirt", "suit", "tie", "dress", "scarf", "trousers", "boots", "Holiday activities", "fish", "windsurf", "ski", "play golf", "sunbathe", "read a book", "swim", "Useful phrases", "Are you free this afternoon?", "Let's go shopping.", "I'm busy this afternoon.", "How about going tomorrow?", "Sure, that's a good idea.", "Nothing, really.", "Why don't we go jogging in the park?", "I'm very tired.", "Sounds great!"],
             m7: ["singer", "scientist", "ballerina", "athlete", "inventor", "nurse", "astronaut", "explorer", "painter", "live", "try", "appear", "manage", "grab", "bury", "travel", "reach", "kill", "decide", "fail", "succeed", "How was your weekend?", "Quite boring.", "What about you?", "Did you like it?", "Who else was with you?"],
             m8: ["rice", "eggs", "biscuits", "bread", "pineapples", "cherries", "orange", "potatoes", "carrots", "fish", "meat", "tea", "tomatoes", "cheese", "wear traditional costumes", "fly the national flag", "paint their faces", "have a street parade", "wear green dragon costumes", "Takeaway, please.", "Can I take your order?", "I'd like a large cheeseburger, please.", "Would you like anything to drink with that?", "Is that to eat-in or takeaway?", "Here you are.", "An orange juice, please.", "Enjoy your meal.", "Thank you."],
             m9: ["chemist's", "bookshop", "toy shop", "department store", "greengrocer's", "bakery", "florist's", "newsagent's", "butcher's", "circus", "gallery", "cinema", "concert hall", "zoo", "museum", "theatre", "marine park", "horror", "romance", "comedy", "action", "adventure", "animated", "fantasy", "science fiction", "Excuse me, can you tell me where the cinema is?", "Go down Bath street.", "Turn right.", "Turn left.", "The cinema is on your left.", "It's opposite the fast food restaurant.", "You can't miss it.", "coach", "motorbike", "train", "car", "ship", "bike", "plane"],
@@ -187,13 +187,12 @@
             statusText.style.color = "#2d3436";
         }
 
-        // ฟังก์ชันทำความสะอาดคำก่อนตรวจ เพื่อลดปัญหาเครื่องหมายวรรคตอน
         function cleanWord(word) {
             return word.toLowerCase()
-                       .replace(/'/g, '') // ลบ apostrophe (เช่น chemist's -> chemists)
-                       .replace(/-/g, ' ') // เปลี่ยนขีดกลางเป็นช่องว่าง (เช่น white-water -> white water)
-                       .replace(/[^a-z\s]/g, '') // ลบสัญลักษณ์อื่นๆ ออกให้หมด
-                       .replace(/\s+/g, ' ') // จัดการช่องว่างที่เกินมา
+                       .replace(/'/g, '') 
+                       .replace(/-/g, ' ') 
+                       .replace(/[^a-z\s]/g, '') 
+                       .replace(/\s+/g, ' ') 
                        .trim();
         }
 
