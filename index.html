@@ -28,12 +28,17 @@
         
         #status { margin-top: 20px; font-size: 20px; font-weight: bold; color: #2d3436; height: 30px; }
         .score-text { color: #e17055; }
+
+        .warning-notice { color: #d32f2f; font-size: 15px; font-weight: bold; margin-bottom: 20px; background: #fff9db; padding: 10px 20px; border-radius: 50px; display: inline-block; border: 1px solid #ffe066; }
     </style>
 </head>
 <body>
 
     <h2>🎤 เกมฝึกออกเสียงคำศัพท์ ม.1</h2>
     
+    <div class="warning-notice">⚠️ กรุณาฝึกออกเสียงครบทุกคำแล้วจะลงชื่อส่งคะแนนได้</div>
+    <br>
+
     <select id="module-select" onchange="startGame()">
         <option value="m1">Module 1: School & Introducing</option>
         <option value="m2">Module 2: Body, Appearance & Things</option>
@@ -64,7 +69,26 @@
     
     <p id="status">เลือกระดับชั้นแล้วกดปุ่มเพื่อเริ่มเลย!</p>
 
+    <div id="login-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); z-index: 2000; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; width: 85%; max-width: 350px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); border: 2px solid #00b894; text-align: center;">
+            <h2 style="margin-top: 0; color: #00b894;">👋 ลงชื่อส่งคะแนน</h2>
+            <p style="font-size: 14px; color: #636e72; margin-bottom: 20px;">กรุณากรอกข้อมูลเพื่อบันทึกคะแนน</p>
+            <input type="text" id="m_name" placeholder="ชื่อ - นามสกุล" autocomplete="name" style="width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 16px; text-align: center; box-sizing: border-box;">
+            <input type="text" id="m_room" placeholder="ชั้น/ห้อง (เช่น ม.1/1)" autocomplete="organization" style="width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 16px; text-align: center; box-sizing: border-box;">
+            <input type="text" id="m_id" placeholder="รหัสนักเรียน (5 หลัก)" maxlength="5" autocomplete="username" oninput="this.value = this.value.replace(/[^0-9]/g, '');" style="width: 90%; padding: 12px; margin-bottom: 15px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 16px; text-align: center; box-sizing: border-box;">
+            <button id="submitBtnModal" onclick="submitToGoogleSheets()" style="width: 100%; padding: 12px; background: #00b894; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;">🚀 ยืนยันและส่งคะแนน</button>
+            <div id="modal-err" style="color:#d63031; font-size:14px; margin-top:10px; display:none;"></div>
+            <div id="saveStatus" style="font-size: 16px; color: #00b894; margin-top: 15px; font-weight: bold; display: none;"></div>
+            <button id="closeModalBtn" onclick="document.getElementById('login-modal').style.display='none'" style="margin-top: 15px; background: transparent; border: none; color: #636e72; text-decoration: underline; cursor: pointer; font-size: 14px;">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
     <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxd_UGE1ZY_1dcB3B7l0Vy8azxhuuFoc_kftJ7QZ1Nc4XIaXGKF9RPs8WxhZ0K5VyVN/exec';
+        let LESSON_NAME = 'ม.1 ฝึกออกเสียงคำศัพท์';
+        let finalScore = 0;
+        let finalMaxScore = 0;
+
         const vocabData = {
             m1: ["English", "Information Technology", "Music", "History", "Maths", "Physical Education", "Art", "Science", "Geography", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "sharpener", "notepad", "eraser", "pencil", "atlas", "ruler", "bag", "Nice to meet you.", "How old are you?", "What's your name?", "How are you?", "I'm fine, thanks.", "Not bad.", "See you later.", "Hello!", "Good morning!", "Good afternoon!", "Good evening!", "Good night!", "Goodbye!"],
             m2: ["eye", "head", "hair", "ear", "moustache", "arm", "leg", "nose", "mouth", "hand", "foot", "short", "tall", "big", "small", "plump", "thin", "long", "beautiful", "ugly", "cap", "guitar", "scarf", "watch", "handbag", "teddy bear", "jeans", "shoes", "bicycle", "gloves", "basketball", "digital camera", "helmet", "skateboard", "trainers", "the UK", "the USA", "Spain", "Russia", "New Zealand", "France", "Japan", "American", "Russian", "British", "New Zealander", "Spanish", "French", "Japanese", "How can I help you?", "I want to buy a souvenir.", "How about this scarf?", "That's a good idea.", "How much is it?", "Here you are."],
@@ -126,20 +150,18 @@
                 osc.start(audioCtx.currentTime);
                 osc.stop(audioCtx.currentTime + 0.3);
             } else if (type === 'finish') {
-                // สร้างเสียงฉลองแบบ Ta-Da! (แต แด แด่ แด๊นนน)
                 const notes = [
-                    { freq: 523.25, time: 0, dur: 0.15 },    // C5
-                    { freq: 659.25, time: 0.15, dur: 0.15 }, // E5
-                    { freq: 783.99, time: 0.30, dur: 0.15 }, // G5
-                    { freq: 1046.50, time: 0.45, dur: 0.8 }  // C6
+                    { freq: 523.25, time: 0, dur: 0.15 },    
+                    { freq: 659.25, time: 0.15, dur: 0.15 }, 
+                    { freq: 783.99, time: 0.30, dur: 0.15 }, 
+                    { freq: 1046.50, time: 0.45, dur: 0.8 }  
                 ];
-                
                 notes.forEach(note => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
-                    osc.type = 'square'; // ใช้เสียงแนวแตร
+                    osc.type = 'square'; 
                     osc.frequency.setValueAtTime(note.freq, audioCtx.currentTime + note.time);
                     gain.gain.setValueAtTime(0.2, audioCtx.currentTime + note.time);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + note.time + note.dur);
@@ -162,6 +184,9 @@
 
         function startGame() {
             const selectedModule = moduleSelect.value;
+            const moduleText = moduleSelect.options[moduleSelect.selectedIndex].text;
+            LESSON_NAME = 'ฝึกออกเสียง: ' + moduleText; // ปรับชื่อ Lesson ตาม Module ที่เลือก
+            
             currentModuleWords = shuffleArray([...vocabData[selectedModule]]);
             wordIndex = 0;
             score = 0;
@@ -175,6 +200,11 @@
                 if (!isGameEnded) {
                     playSound('finish');
                     isGameEnded = true;
+                    
+                    // หน่วงเวลาให้เด็กเห็นพลุฉลองก่อนเด้งหน้าต่างส่งคะแนน (1.5 วินาที)
+                    setTimeout(() => {
+                        openSubmitModal(score, currentModuleWords.length * 10);
+                    }, 1500);
                 }
                 wordDisplay.innerText = "🎉 จบเกม!";
                 wordDisplay.style.fontSize = "55px";
@@ -273,7 +303,80 @@
             recognition.start();
         }
 
-        window.onload = startGame;
+        // ==========================================
+        // ระบบส่งคะแนน Google Sheets
+        // ==========================================
+        function openSubmitModal(s, maxS) {
+            finalScore = s;
+            finalMaxScore = maxS;
+            document.getElementById('login-modal').style.display = 'flex';
+        }
+
+        async function submitToGoogleSheets() {
+            let n = document.getElementById('m_name').value.trim();
+            let r = document.getElementById('m_room').value.trim();
+            let i = document.getElementById('m_id').value.trim();
+            let err = document.getElementById('modal-err');
+            let stat = document.getElementById('saveStatus');
+            let btn = document.getElementById('submitBtnModal');
+
+            if(!n || !r || i.length !== 5) {
+                err.innerText = "กรุณากรอกข้อมูลให้ครบ และรหัสต้องมี 5 หลัก";
+                err.style.display = 'block';
+                return;
+            }
+            err.style.display = 'none';
+
+            localStorage.setItem('studentName', n);
+            localStorage.setItem('studentRoom', r);
+            localStorage.setItem('studentId', i);
+
+            btn.style.display = 'none';
+            stat.style.display = 'block';
+            stat.innerText = "⏳ กำลังบันทึกคะแนน...";
+            stat.style.color = "#00b894";
+
+            const payload = { 
+                name: n, 
+                room: r, 
+                studentId: i, 
+                lesson: LESSON_NAME, 
+                score: finalScore,
+                maxScore: finalMaxScore,
+                _t: new Date().getTime() 
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors', cache: 'no-store',
+                    body: JSON.stringify(payload),
+                    headers: { "Content-Type": "text/plain;charset=utf-8" } 
+                });
+
+                stat.innerText = '✅ บันทึกคะแนนลงระบบเรียบร้อย!';
+                stat.style.color = '#00b894';
+                
+                setTimeout(() => {
+                    document.getElementById('login-modal').style.display = 'none';
+                }, 2000);
+
+            } catch(error) {
+                stat.innerText = '❌ ส่งข้อมูลไม่สำเร็จ (ลองกดส่งใหม่)';
+                stat.style.color = '#d32f2f';
+                btn.style.display = 'inline-block';
+            }
+        }
+
+        window.onload = function() {
+            // ดึงข้อมูลเก่ามาใส่ถ่าเคยพิมพ์ไว้
+            if(localStorage.getItem('studentName')) {
+                document.getElementById('m_name').value = localStorage.getItem('studentName');
+                document.getElementById('m_room').value = localStorage.getItem('studentRoom');
+                document.getElementById('m_id').value = localStorage.getItem('studentId');
+            }
+            startGame();
+        };
+
     </script>
 </body>
 </html>
