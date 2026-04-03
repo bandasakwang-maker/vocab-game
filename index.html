@@ -25,6 +25,8 @@
         .btn-skip:hover { background-color: #f1c40f; }
         .btn-restart { background-color: #e17055; }
         .btn-restart:hover { background-color: #fab1a0; }
+        .btn-submit { background-color: #9b59b6; display: none; } /* ปุ่มส่งคะแนนสำรอง */
+        .btn-submit:hover { background-color: #8e44ad; }
         
         #status { margin-top: 20px; font-size: 20px; font-weight: bold; color: #2d3436; height: 30px; }
         .score-text { color: #e17055; }
@@ -65,6 +67,7 @@
         <button class="btn-speak" onclick="playExample()">🔊 ฟังตัวอย่าง</button>
         <button class="btn-mic" onclick="startListening()">🎤 กดแล้วพูด</button>
         <button class="btn-skip" onclick="skipWord()">⏭️ ข้ามคำนี้</button>
+        <button id="btn-submit-score" class="btn-submit" onclick="forceOpenModal()">📝 ส่งคะแนน</button>
     </div>
     
     <p id="status">เลือกระดับชั้นแล้วกดปุ่มเพื่อเริ่มเลย!</p>
@@ -113,6 +116,7 @@
         const moduleSelect = document.getElementById('module-select');
         const scoreDisplay = document.getElementById('score');
         const progressDisplay = document.getElementById('progress');
+        const btnSubmitScore = document.getElementById('btn-submit-score');
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -185,13 +189,14 @@
         function startGame() {
             const selectedModule = moduleSelect.value;
             const moduleText = moduleSelect.options[moduleSelect.selectedIndex].text;
-            LESSON_NAME = 'ฝึกออกเสียง: ' + moduleText; // ปรับชื่อ Lesson ตาม Module ที่เลือก
+            LESSON_NAME = 'ฝึกพูด: ' + moduleText; 
             
             currentModuleWords = shuffleArray([...vocabData[selectedModule]]);
             wordIndex = 0;
             score = 0;
             isGameEnded = false;
             scoreDisplay.innerText = score;
+            btnSubmitScore.style.display = 'none'; // ซ่อนปุ่มตอนเริ่มใหม่
             showWord();
         }
 
@@ -201,6 +206,9 @@
                     playSound('finish');
                     isGameEnded = true;
                     
+                    // โชว์ปุ่มส่งคะแนนเผื่อ popup ไม่เด้ง
+                    btnSubmitScore.style.display = 'inline-block';
+
                     // หน่วงเวลาให้เด็กเห็นพลุฉลองก่อนเด้งหน้าต่างส่งคะแนน (1.5 วินาที)
                     setTimeout(() => {
                         openSubmitModal(score, currentModuleWords.length * 10);
@@ -306,6 +314,10 @@
         // ==========================================
         // ระบบส่งคะแนน Google Sheets
         // ==========================================
+        function forceOpenModal() {
+            openSubmitModal(score, currentModuleWords.length * 10);
+        }
+
         function openSubmitModal(s, maxS) {
             finalScore = s;
             finalMaxScore = maxS;
@@ -368,7 +380,6 @@
         }
 
         window.onload = function() {
-            // ดึงข้อมูลเก่ามาใส่ถ่าเคยพิมพ์ไว้
             if(localStorage.getItem('studentName')) {
                 document.getElementById('m_name').value = localStorage.getItem('studentName');
                 document.getElementById('m_room').value = localStorage.getItem('studentRoom');
